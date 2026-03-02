@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tank 3 Level Converter</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f0e;
+    --panel: #161a18;
+    --border: #2a3330;
+    --accent: #00e5a0;
+    --accent2: #ff6b35;
+    --text: #c8d8d3;
+    --dim: #4a5e58;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .header {
+    margin-bottom: 32px;
+  }
+
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.2rem;
+    letter-spacing: 0.05em;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .header h1 span {
+    color: var(--accent);
+  }
+
+  .header p {
+    font-size: 0.72rem;
+    color: var(--dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+  }
+
+  .input-group {
+    margin-bottom: 24px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 10px;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.8rem;
+    font-weight: 600;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  input[type="number"]:focus {
+    border-color: var(--accent);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  .result-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 16px;
+  }
+
+  .result-main {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .result-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.6rem;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+
+  .result-display .frac {
+    color: var(--accent2);
+  }
+
+  .result-row {
+    display: flex;
+    gap: 24px;
+    align-items: baseline;
+  }
+
+  .result-decimal {
+    font-size: 0.72rem;
+    color: var(--dim);
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+
+  .result-decimal span {
+    color: var(--text);
+  }
+
+  .empty {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    color: var(--border);
+    line-height: 1;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>TANK 3<br><span>LEVEL CONVERTER</span></h1>
+    <p>BBL → Feet &amp; Inches</p>
+  </div>
+
+  <div class="card">
+    <div class="input-group">
+      <label>Barrels (BBL)</label>
+      <input type="number" id="bbl" placeholder="0" min="0" step="any" autofocus oninput="convert()">
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="result-label">Result</div>
+
+    <div class="result-display" id="result">—</div>
+
+    <div class="result-decimal" id="decimal" style="display:none">
+      Decimal feet: <span id="decFeet">—</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  function convert() {
+    const val = parseFloat(document.getElementById('bbl').value);
+    const resultEl = document.getElementById('result');
+    const decEl = document.getElementById('decimal');
+    const decFeetEl = document.getElementById('decFeet');
+
+    if (isNaN(val) || val < 0) {
+      resultEl.innerHTML = '—';
+      decEl.style.display = 'none';
+      return;
+    }
+
+    const totalInches = val / 15.1;
+    const wholeFeet = Math.floor(totalInches / 12);
+    
+    
+    const wholeInches = Math.floor(totalInches % 12);
+    const remainderIn = (totalInches % 12) - wholeInches;
+
+    // Round to nearest 1/4"
+    const quarters = Math.round(remainderIn * 4); // 0,1,2,3,4
+    let displayFt = wholeFeet;
+    let displayIn = wholeInches;
+    let fracStr = '';
+
+    let adjustedQuarters = quarters;
+    if (adjustedQuarters === 4) { adjustedQuarters = 0; displayIn += 1; }
+    if (displayIn === 12) { displayIn = 0; displayFt += 1; }
+
+    if (adjustedQuarters === 1) fracStr = '-1/4';
+    else if (adjustedQuarters === 2) fracStr = '-1/2';
+    else if (adjustedQuarters === 3) fracStr = '-3/4';
+
+    const fracHtml = fracStr ? `<span class="frac">${fracStr}</span>` : '';
+    resultEl.innerHTML = `${displayFt}' ${displayIn}${fracHtml}"`;
+
+    decFeetEl.textContent = totalInches.toFixed(4) + " inches";
+    decEl.style.display = 'block';
+  }
+</script>
+</body>
+</html>
